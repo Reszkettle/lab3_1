@@ -132,4 +132,23 @@ class BookKeeperTest {
         verify(taxPolicy, times(0)).calculateTax(any(ProductType.class), any(Money.class));
     }
 
+
+    @Test
+    void shouldAddCalculatedTaxIntoInvoiceLineItem() {
+        // given
+        InvoiceRequest request = new InvoiceRequest(TEST_CLIENT);
+        Invoice invoice = new Invoice(Id.generate(), TEST_CLIENT);
+        RequestItem requestItem = new RequestItem(TEST_STANDARD_PRODUCT_DATA, 1, Money.ZERO);
+        request.add(requestItem);
+        when(invoiceFactory.create(any(ClientData.class))).thenReturn(invoice);
+        when(taxPolicy.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(TEST_ZERO_TAX);
+
+        // when
+        Invoice actualInvoice = keeper.issuance(request, taxPolicy);
+
+        // then
+        Tax actualTax = actualInvoice.getItems().get(0).getTax();
+        assertEquals(TEST_ZERO_TAX, actualTax);
+    }
+
 }
