@@ -50,6 +50,9 @@ class BookKeeperTest {
     @Captor
     ArgumentCaptor<Money> moneyCaptor;
 
+    @Captor
+    ArgumentCaptor<ClientData> clientDataCaptor;
+
     @BeforeEach
     void setUp() {
         keeper = new BookKeeper(invoiceFactory);
@@ -151,4 +154,20 @@ class BookKeeperTest {
         assertEquals(TEST_ZERO_TAX, actualTax);
     }
 
+
+    @Test
+    void shouldInvokeCreateWithClientDataPassedAsIssuanceArgument() {
+        // given
+        InvoiceRequest request = new InvoiceRequest(TEST_CLIENT);
+        Invoice invoice = new Invoice(Id.generate(), TEST_CLIENT);
+        when(invoiceFactory.create(any(ClientData.class))).thenReturn(invoice);
+
+        // when
+        keeper.issuance(request, taxPolicy);
+
+        // then
+        verify(invoiceFactory).create(clientDataCaptor.capture());
+        ClientData clientData = clientDataCaptor.getAllValues().get(0);
+        assertEquals(TEST_CLIENT, clientData);
+    }
 }
