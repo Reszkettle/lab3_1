@@ -103,4 +103,33 @@ class BookKeeperTest {
         assertEquals(money, moneyList.get(1));
     }
 
+    @Test
+    void shouldReturnEmptyInvoiceWhenRequestHasNoItems() {
+        // given
+        InvoiceRequest request = new InvoiceRequest(TEST_CLIENT);
+        Invoice invoice = new Invoice(Id.generate(), TEST_CLIENT);
+        when(invoiceFactory.create(TEST_CLIENT)).thenReturn(invoice);
+
+        // when
+        Invoice actualInvoice = keeper.issuance(request, taxPolicy);
+
+        // then
+        assertEquals(0, actualInvoice.getItems()
+                                     .size());
+    }
+
+    @Test
+    void shouldNotInvokeCalculateMethodWhenRequestHasNoItems() {
+        // given
+        InvoiceRequest request = new InvoiceRequest(TEST_CLIENT);
+        Invoice invoice = new Invoice(Id.generate(), TEST_CLIENT);
+        when(invoiceFactory.create(TEST_CLIENT)).thenReturn(invoice);
+
+        // when
+        keeper.issuance(request, taxPolicy);
+
+        // then
+        verify(taxPolicy, times(0)).calculateTax(any(ProductType.class), any(Money.class));
+    }
+
 }
